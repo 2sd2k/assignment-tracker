@@ -61,6 +61,32 @@ async function initSchema() {
     )
   `);
 
+  // Migrate: add is_pinned column if it doesn't exist yet
+  try {
+    await d.execute(
+      "ALTER TABLE assignments ADD COLUMN is_pinned INTEGER NOT NULL DEFAULT 0"
+    );
+  } catch {
+    // Column already exists — safe to ignore
+  }
+
+  // Unique index so INSERT OR IGNORE works for custom notifications
+  try {
+    await d.execute(
+      "CREATE UNIQUE INDEX IF NOT EXISTS uq_notification_hours ON notification_settings (hours_before)"
+    );
+  } catch {
+    // Already exists
+  }
+
+  // Remove duplicate notification settings (keep lowest id per hours_before)
+  await d.execute(
+    `DELETE FROM notification_settings
+     WHERE id NOT IN (
+       SELECT MIN(id) FROM notification_settings GROUP BY hours_before
+     )`
+  );
+
   // Insert default notification settings if empty
   const settings = await d.select<{ count: number }[]>(
     "SELECT COUNT(*) as count FROM notification_settings"
@@ -204,6 +230,7 @@ export interface AssignmentRow {
   is_completed: number;
   completed_at: string | null;
   is_manual: number;
+  is_pinned: number;
   created_at: string;
   updated_at: string;
 }
@@ -223,6 +250,7 @@ export async function getAssignments(): Promise<AssignmentWithCourse[]> {
     JOIN platforms p ON c.platform_id = p.id
     ORDER BY
       a.is_completed ASC,
+      a.is_pinned DESC,
       CASE WHEN a.due_at IS NULL THEN 1 ELSE 0 END,
       a.due_at ASC
   `);
@@ -294,6 +322,14 @@ export async function deleteAssignment(id: number): Promise<void> {
   await d.execute("DELETE FROM assignments WHERE id = $1", [id]);
 }
 
+export async function togglePinAssignment(id: number): Promise<void> {
+  const d = await getDb();
+  await d.execute(
+    "UPDATE assignments SET is_pinned = CASE WHEN is_pinned = 1 THEN 0 ELSE 1 END WHERE id = $1",
+    [id]
+  );
+}
+
 // ---- Notification Settings ----
 
 export interface NotificationSettingRow {
@@ -317,4 +353,20 @@ export async function toggleNotificationSetting(id: number): Promise<void> {
     "UPDATE notification_settings SET enabled = CASE WHEN enabled = 1 THEN 0 ELSE 1 END WHERE id = $1",
     [id]
   );
+}
+
+export async function addNotificationSetting(
+  hoursBefore: number
+): Promise<void> {
+  const d = await getDb();
+  // Ignore if already exists
+  await d.execute(
+    "INSERT OR IGNORE INTO notification_settings (hours_before, enabled) VALUES ($1, 1)",
+    [hoursBefore]
+  );
+}
+
+export async function deleteNotificationSetting(id: number): Promise<void> {
+  const d = await getDb();
+  await d.execute("DELETE FROM notification_settings WHERE id = $1", [id]);
 }

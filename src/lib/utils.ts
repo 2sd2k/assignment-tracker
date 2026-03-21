@@ -23,30 +23,30 @@ export function getUrgencyLevel(dueAt: string | null): UrgencyLevel {
 export function getUrgencyColor(level: UrgencyLevel): string {
   switch (level) {
     case "overdue":
-      return "bg-red-100 border-red-400 text-red-800";
+      return "bg-red-500/10 border-red-500/30 text-red-400";
     case "urgent":
-      return "bg-orange-100 border-orange-400 text-orange-800";
+      return "bg-orange-500/10 border-orange-500/30 text-orange-400";
     case "soon":
-      return "bg-yellow-100 border-yellow-400 text-yellow-800";
+      return "bg-yellow-500/10 border-yellow-500/30 text-yellow-400";
     case "later":
-      return "bg-green-100 border-green-400 text-green-800";
+      return "bg-emerald-500/10 border-emerald-500/30 text-emerald-400";
     case "none":
-      return "bg-gray-100 border-gray-300 text-gray-700";
+      return "bg-slate-700/50 border-slate-600/50 text-slate-400";
   }
 }
 
 export function getUrgencyDot(level: UrgencyLevel): string {
   switch (level) {
     case "overdue":
-      return "bg-red-500";
+      return "bg-red-400";
     case "urgent":
-      return "bg-orange-500";
+      return "bg-orange-400";
     case "soon":
-      return "bg-yellow-500";
+      return "bg-yellow-400";
     case "later":
-      return "bg-green-500";
+      return "bg-emerald-400";
     case "none":
-      return "bg-gray-400";
+      return "bg-slate-500";
   }
 }
 

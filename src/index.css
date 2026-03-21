@@ -19,6 +19,47 @@ body {
   color: #0f172a;
 }
 
+.dark body {
+  background-color: #020617;
+  color: #e2e8f0;
+}
+
 * {
   box-sizing: border-box;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #e2e8f0;
+  border-radius: 3px;
+}
+.dark ::-webkit-scrollbar-thumb {
+  background: #1e293b;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #cbd5e1;
+}
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}
+
+input[type="date"],
+input[type="time"] {
+  color-scheme: light;
+}
+.dark input[type="date"],
+.dark input[type="time"] {
+  color-scheme: dark;
+}
+
+select {
+  color-scheme: light;
+}
+.dark select {
+  color-scheme: dark;
 }

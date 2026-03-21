@@ -14,6 +14,9 @@ interface PlatformSyncedPayload {
   data: string;
 }
 
+const inputCls =
+  "w-full px-3 py-2 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-900 dark:text-slate-200 placeholder-slate-400 dark:placeholder-slate-600 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 transition-colors";
+
 export default function ConnectPlatform({ onClose }: Props) {
   const { connectPlatform, processScrapedData } = useAssignmentStore();
   const [step, setStep] = useState<"choose" | "canvas-url" | "waiting">("choose");
@@ -35,7 +38,6 @@ export default function ConnectPlatform({ onClose }: Props) {
       const platformId = await connectPlatform("canvas", baseUrl, baseUrl);
       const label = `canvas-login-${platformId}`;
 
-      // Register listener BEFORE opening the window so no event is missed
       let checkInterval: ReturnType<typeof setInterval> | undefined;
       let unlisten: (() => void) | undefined;
       unlisten = await listen<PlatformSyncedPayload>(
@@ -68,7 +70,6 @@ export default function ConnectPlatform({ onClose }: Props) {
       setPlatformType("canvas");
       setStep("waiting");
 
-      // Fallback: detect manual window close (user cancelled without logging in)
       checkInterval = setInterval(async () => {
         try {
           const { getAllWebviewWindows } = await import("@tauri-apps/api/webviewWindow");
@@ -156,54 +157,60 @@ export default function ConnectPlatform({ onClose }: Props) {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-md mx-4 p-6">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold">Connect Platform</h2>
+    <div className="fixed inset-0 bg-black/40 dark:bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-xl w-full max-w-md mx-4 p-5">
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-base font-semibold text-slate-900 dark:text-slate-100">
+            Connect Platform
+          </h2>
           <button
             onClick={onClose}
-            className="p-1 rounded hover:bg-gray-100"
+            className="p-1 rounded text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-600 dark:hover:text-slate-300 transition-colors cursor-pointer"
             disabled={isConnecting}
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+          <div className="mb-4 p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg text-red-600 dark:text-red-400 text-sm">
             {error}
           </div>
         )}
 
         {step === "choose" && (
-          <div className="space-y-3">
-            <p className="text-sm text-gray-600 mb-4">
+          <div className="space-y-2">
+            <p className="text-xs text-slate-500 dark:text-slate-500 mb-4">
               Choose a platform to connect. You'll log in through an embedded browser window.
             </p>
             <button
               onClick={() => setStep("canvas-url")}
-              className="w-full flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left"
+              className="w-full flex items-center gap-3 p-4 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:border-slate-300 dark:hover:border-slate-700 transition-colors text-left cursor-pointer"
             >
-              <div className="w-10 h-10 bg-red-100 rounded-lg flex items-center justify-center">
-                <Globe className="w-5 h-5 text-red-600" />
+              <div className="w-9 h-9 bg-red-50 dark:bg-red-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Globe className="w-5 h-5 text-red-500 dark:text-red-400" />
               </div>
               <div>
-                <div className="font-medium">Canvas LMS</div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm font-medium text-slate-900 dark:text-slate-200">
+                  Canvas LMS
+                </div>
+                <div className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
                   Sync assignments via Canvas API
                 </div>
               </div>
             </button>
             <button
               onClick={handleGradescopeConnect}
-              className="w-full flex items-center gap-3 p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors text-left"
+              className="w-full flex items-center gap-3 p-4 border border-slate-200 dark:border-slate-800 rounded-xl hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:border-slate-300 dark:hover:border-slate-700 transition-colors text-left cursor-pointer"
             >
-              <div className="w-10 h-10 bg-teal-100 rounded-lg flex items-center justify-center">
-                <Globe className="w-5 h-5 text-teal-600" />
+              <div className="w-9 h-9 bg-teal-50 dark:bg-teal-500/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Globe className="w-5 h-5 text-teal-500 dark:text-teal-400" />
               </div>
               <div>
-                <div className="font-medium">Gradescope</div>
-                <div className="text-sm text-gray-500">
+                <div className="text-sm font-medium text-slate-900 dark:text-slate-200">
+                  Gradescope
+                </div>
+                <div className="text-xs text-slate-400 dark:text-slate-500 mt-0.5">
                   Scrape assignments from dashboard
                 </div>
               </div>
@@ -213,11 +220,11 @@ export default function ConnectPlatform({ onClose }: Props) {
 
         {step === "canvas-url" && (
           <div className="space-y-4">
-            <p className="text-sm text-gray-600">
+            <p className="text-xs text-slate-500">
               Enter your university's Canvas URL, then log in through the browser window.
             </p>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1.5">
                 Canvas URL
               </label>
               <input
@@ -225,36 +232,36 @@ export default function ConnectPlatform({ onClose }: Props) {
                 value={canvasUrl}
                 onChange={(e) => setCanvasUrl(e.target.value)}
                 placeholder="e.g. canvas.university.edu"
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={inputCls}
                 autoFocus
               />
             </div>
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <button
                 onClick={() => setStep("choose")}
-                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50"
+                className="flex-1 px-4 py-2 border border-slate-300 dark:border-slate-700 rounded-lg text-sm text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200 transition-colors cursor-pointer"
               >
                 Back
               </button>
               <button
                 onClick={handleCanvasConnect}
                 disabled={!canvasUrl.trim() || isConnecting}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+                className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-500 disabled:opacity-40 transition-colors cursor-pointer"
               >
-                {isConnecting ? "Opening..." : "Connect"}
+                {isConnecting ? "Opening…" : "Connect"}
               </button>
             </div>
           </div>
         )}
 
         {step === "waiting" && (
-          <div className="text-center py-6">
-            <div className="animate-spin w-8 h-8 border-2 border-gray-300 border-t-blue-500 rounded-full mx-auto mb-4" />
-            <p className="text-gray-600">
-              Log in to {platformType === "canvas" ? "Canvas" : "Gradescope"} in the browser window.
+          <div className="text-center py-8">
+            <div className="animate-spin w-7 h-7 border-2 border-slate-200 dark:border-slate-700 border-t-indigo-500 rounded-full mx-auto mb-4" />
+            <p className="text-sm text-slate-700 dark:text-slate-300">
+              Log in to {platformType === "canvas" ? "Canvas" : "Gradescope"} in the browser window
             </p>
-            <p className="text-sm text-gray-400 mt-2">
-              Your assignments will sync automatically after you log in.
+            <p className="text-xs text-slate-400 dark:text-slate-600 mt-2">
+              Assignments will sync automatically after login
             </p>
           </div>
         )}

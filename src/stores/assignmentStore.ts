@@ -4,6 +4,7 @@ import {
   getCourses,
   getPlatforms,
   toggleAssignmentComplete,
+  togglePinAssignment,
   deleteAssignment,
   addAssignment,
   addManualCourse,
@@ -15,6 +16,8 @@ import {
   deleteCourse,
   getNotificationSettings,
   toggleNotificationSetting,
+  addNotificationSetting,
+  deleteNotificationSetting,
   type AssignmentWithCourse,
   type CourseRow,
   type PlatformRow,
@@ -47,6 +50,7 @@ interface AssignmentStore {
   // Actions
   loadAll: () => Promise<void>;
   toggleComplete: (id: number) => Promise<void>;
+  togglePin: (id: number) => Promise<void>;
   removeAssignment: (id: number) => Promise<void>;
   addClass: (name: string) => Promise<void>;
   removeCourse: (id: number) => Promise<void>;
@@ -85,6 +89,8 @@ interface AssignmentStore {
   // Notification actions
   loadNotificationSettings: () => Promise<void>;
   toggleNotification: (id: number) => Promise<void>;
+  addNotification: (hoursBefore: number) => Promise<void>;
+  removeNotification: (id: number) => Promise<void>;
 }
 
 async function ensureManualPlatform(
@@ -135,6 +141,12 @@ export const useAssignmentStore = create<AssignmentStore>((set, get) => ({
 
   toggleComplete: async (id: number) => {
     await toggleAssignmentComplete(id);
+    const assignments = await getAssignments();
+    set({ assignments });
+  },
+
+  togglePin: async (id: number) => {
+    await togglePinAssignment(id);
     const assignments = await getAssignments();
     set({ assignments });
   },
@@ -421,6 +433,18 @@ export const useAssignmentStore = create<AssignmentStore>((set, get) => ({
 
   toggleNotification: async (id: number) => {
     await toggleNotificationSetting(id);
+    const notificationSettings = await getNotificationSettings();
+    set({ notificationSettings });
+  },
+
+  addNotification: async (hoursBefore: number) => {
+    await addNotificationSetting(hoursBefore);
+    const notificationSettings = await getNotificationSettings();
+    set({ notificationSettings });
+  },
+
+  removeNotification: async (id: number) => {
+    await deleteNotificationSetting(id);
     const notificationSettings = await getNotificationSettings();
     set({ notificationSettings });
   },
